@@ -107,8 +107,11 @@ class Client(object):
 
             self.interface.move_cursor(direction)
         elif key == 'KEY_BACKSPACE':
+            self.interface.print_text('Retrieving mail...',
+                                      self.interface.info_box)
             self.messages = self.get_messages(self.interface.
                                               main_box.getmaxyx()[0] - 1)
+            self.interface.clear(self.interface.info_box)
             self.interface.clear()
             self.print_messages(self.messages)
 
