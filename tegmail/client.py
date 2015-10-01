@@ -202,7 +202,11 @@ class Client(object):
                     'text/' not in part.get_content_type()):
                 continue
 
-            text = part.get_payload(decode=True).decode('utf-8')
+            try:
+                text = part.get_payload(decode=True).decode('utf-8')
+            except UnicodeDecodeError:
+                text = part.get_payload(decode=True).decode('latin-1')
+
             text = text.replace('\r\n', '\n')
 
             if part.get_content_type() == 'text/html':
