@@ -142,6 +142,7 @@ class Client(object):
         return messages
 
     def print_messages(self, messages):
+        """Displays all messages."""
         index = 0
         for message in messages:
             message_headers = {}
@@ -176,6 +177,7 @@ class Client(object):
         self.interface.move_cursor(0, 0)
 
     def print_message(self, message):
+        """Displays message contents."""
         message_headers = {}
         for header in message['payload']['headers']:
             message_headers[header['name']] = header['value']
