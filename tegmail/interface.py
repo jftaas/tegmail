@@ -12,6 +12,7 @@ class Interface(object):
         self.info_box = None
         self._keys = {
             13: 'KEY_ENTER',
+            27: 'KEY_ESCAPE',
             127: 'KEY_BACKSPACE',
             258: 'KEY_DOWN',
             259: 'KEY_UP',

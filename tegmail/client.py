@@ -27,7 +27,7 @@ class Client(object):
         A :class:`Interface` that represents user interface handler.
     """
 
-    def __init__(self, flags, debug):
+    def __init__(self, flags, debug=False):
         self.debug_mode = debug
         self.messages = []
         self.states = {
@@ -36,6 +36,7 @@ class Client(object):
         }
 
         self.currentState = self.states['home']
+        self._flags = flags  # for client restart
 
         SCOPES = 'https://www.googleapis.com/auth/gmail.modify'
         CLIENT_SECRET_FILE = 'client_secret.json'
@@ -87,7 +88,10 @@ class Client(object):
         if not self.gmail.connected:
             return
 
-        if key == 'KEY_ENTER':
+        if key == 'KEY_ESCAPE':
+            self.interface.close()
+            self.__init__(self._flags)
+        elif key == 'KEY_ENTER':
             self.currentState = self.states['message']
             index = self.interface.get_cursor_pos()[0]
 
