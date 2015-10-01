@@ -38,24 +38,6 @@ class Client(object):
 
         self.currentState = self.states['home']
 
-        self.interface = tegmail.Interface()
-        self.interface.on_key_event.append(self._on_key_event)
-        self.interface.print_text('Connecting...\n')
-        self.gmail = self._authenticate(flags)
-
-        self.messages = self.get_messages(self.interface.
-                                          main_box.getmaxyx()[0] - 1)
-
-        self.interface.clear()
-        self.print_messages(self.messages)
-
-        self.update()
-
-    def _authenticate(self, flags):
-        """Retrieves credentials and authenticates.
-
-        :return: The :class:`Gmail` retrieved from authentication.
-        """
         SCOPES = 'https://www.googleapis.com/auth/gmail.readonly'
         CLIENT_SECRET_FILE = 'client_secret.json'
         APPLICATION_NAME = 'Gmail API Python Quickstart'
@@ -63,6 +45,23 @@ class Client(object):
         authenticator = tegmail.Authenticator(SCOPES, CLIENT_SECRET_FILE,
                                               APPLICATION_NAME)
         credentials = authenticator.get_credentials(flags)
+
+        self.interface = tegmail.Interface()
+        self.interface.on_key_event.append(self._on_key_event)
+        self.interface.print_text('Connecting...\n')
+
+        self.gmail = self._connect(credentials)
+        self.messages = self.get_messages(self.interface.
+                                          main_box.getmaxyx()[0] - 1)
+        self.interface.clear()
+        self.print_messages(self.messages)
+        self.update()
+
+    def _connect(self, credentials):
+        """Retrieves credentials and authenticates.
+
+        :return: The :class:`Gmail` retrieved from authentication.
+        """
         http = credentials.authorize(httplib2.Http())
 
         # connection loop
@@ -195,12 +194,14 @@ class Client(object):
 
             text = part.get_payload(decode=True).decode('utf-8')
             text = text.replace('\r\n', '\n')
+            if 'text/' not in part.get_content_type():
+                continue
+
             if part.get_content_type() == 'text/html':
                 h = html2text.HTML2Text()
                 text = h.handle(text)
 
             text = text.replace('\n', '\n\t')
-
             self.interface.print_text('\t' + text)
 
     def update(self):

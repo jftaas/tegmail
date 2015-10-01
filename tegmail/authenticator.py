@@ -1,4 +1,5 @@
 import os
+import errno
 
 import apiclient  # noqa
 import oauth2client
@@ -23,11 +24,38 @@ class Authenticator(object):
             Credentials, the obtained credential.
         """
         home_dir = os.path.expanduser('~')
-        credential_dir = os.path.join(home_dir, '.credentials')
-        if not os.path.exists(credential_dir):
+        credential_dir = os.path.join(home_dir, '.tegmail/credentials')
+
+        # mkdir -p
+        try:
             os.makedirs(credential_dir)
+        except OSError as exc:
+            if exc.errno == errno.EEXIST and os.path.isdir(credential_dir):
+                pass
+            else:
+                raise
+
+        filenames = []
+        for (dirpath, dirnames, fnames) in os.walk(credential_dir):
+            filenames.extend(fnames)
+
+        os.system('clear')
+
+        if len(filenames) == 0:
+            print('No credentials found!\n')
+        else:
+            print('Found credentials:\n')
+            for filename in filenames:
+                print('\t' + filename + '\n')
+
+        try:
+            user = input('Enter credential name: ')
+        except KeyboardInterrupt:
+            import sys
+            sys.exit()
+
         credential_path = os.path.join(credential_dir,
-                                       'gmail-python-quickstart.json')
+                                       user)
 
         store = oauth2client.file.Storage(credential_path)
         credentials = store.get()
