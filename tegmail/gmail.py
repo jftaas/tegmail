@@ -47,7 +47,7 @@ class Gmail(object):
                                                        ).execute()
 
             return response
-        except errors.HttpError:
+        except (errors.HttpError, ConnectionResetError):
             return None
 
     def get_messages(self, max_results=10, request_format=None,
