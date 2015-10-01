@@ -105,9 +105,6 @@ class Client(object):
                     curpos[0] + direction > len(self.messages) - 1):
                     return
 
-            self.debug(str(curpos[0] + direction) + ' ' +
-                       str(len(self.messages) - 1))
-
             self.interface.move_cursor(direction)
         elif key == 'KEY_BACKSPACE':
             self.messages = self.get_messages(self.interface.
