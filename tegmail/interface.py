@@ -63,7 +63,10 @@ class Interface(object):
         if i in self._keys:
             key = self._keys[i]
         else:
-            key = chr(i)
+            try:
+                key = chr(i)
+            except ValueError:
+                key = ''
         return key
 
     def _change_window_color(self, win, color_index):
@@ -118,3 +121,11 @@ class Interface(object):
         self.main_box.move(y, x)
         self.main_box.chgat(curses.A_REVERSE)
         self.main_box.refresh()
+
+    def add_char(self, y, x, ch, win=None):
+        if not win:
+            win = self.main_box
+
+        win.addch(y, x, ch, curses.A_REVERSE)
+        win.move(y, 0)
+        win.refresh()

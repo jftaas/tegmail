@@ -38,7 +38,7 @@ class Client(object):
 
         self.currentState = self.states['home']
 
-        SCOPES = 'https://www.googleapis.com/auth/gmail.readonly'
+        SCOPES = 'https://www.googleapis.com/auth/gmail.modify'
         CLIENT_SECRET_FILE = 'client_secret.json'
         APPLICATION_NAME = 'Gmail API Python Quickstart'
 
@@ -87,17 +87,21 @@ class Client(object):
 
     # hotkeys in home state
     def _home_keys(self, key):
+        if not self.gmail.connected:
+            return
+
         if key == 'KEY_ENTER':
             self.currentState = self.states['message']
             index = self.interface.get_cursor_pos()[0]
-            message = self.messages[index]
 
             self.interface.clear()
-            self.print_message(message)
+            message = self.read_message(self.messages[index])
+            self.messages[index] = message  # update client-side unread flag
+        elif key == 'd':
+            index = self.interface.get_cursor_pos()[0]
+            self.gmail.trash_message(self.messages[index]['id'])
+            self.interface.add_char(index, 5, ord('D'))
         elif key == 'j' or key == 'k':
-            if not self.gmail.connected:
-                return
-
             direction = 1 if key == 'j' else -1
             curpos = self.interface.get_cursor_pos()
             if (curpos[0] + direction < 0 or
@@ -105,7 +109,7 @@ class Client(object):
                     return
 
             self.interface.move_cursor(direction)
-        elif key == 'KEY_BACKSPACE':
+        elif key == 'KEY_BACKSPACE' or key == 'r':
             self.interface.print_text('Retrieving mail...',
                                       self.interface.info_box)
             self.messages = self.get_messages(self.interface.
@@ -176,8 +180,14 @@ class Client(object):
 
         self.interface.move_cursor(0, 0)
 
-    def print_message(self, message):
+    def read_message(self, message):
         """Displays message contents."""
+        self.gmail.modify_message(message['id'], removeLabelIds=['UNREAD'])
+        try:
+            message['labelIds'].remove('UNREAD')
+        except ValueError:
+            pass
+
         message_headers = {}
         for header in message['payload']['headers']:
             message_headers[header['name']] = header['value']
@@ -189,8 +199,8 @@ class Client(object):
         data = self.gmail.get_message_raw(message['id'])
         data = base64.urlsafe_b64decode(data).decode('utf-8')
 
-        message = email.message_from_string(data)
-        for part in message.walk():
+        email_message = email.message_from_string(data)
+        for part in email_message.walk():
             if part.get_content_type() == "multipart/alternative":
                 continue
 
@@ -205,6 +215,8 @@ class Client(object):
 
             text = text.replace('\n', '\n\t')
             self.interface.print_text('\t' + text)
+
+        return message
 
     def update(self):
         try:

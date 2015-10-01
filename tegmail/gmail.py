@@ -68,13 +68,16 @@ class Gmail(object):
             messages.append(response)
 
         batch = BatchHttpRequest(callback=on_get_message)
-        for message in response['messages']:
-            # message_ids.append(message['id'])
-            batch.add(self._users.messages().get(id=message['id'],
-                                                 userId='me',
-                                                 format=request_format))
+        try:
+            for message in response['messages']:
+                # message_ids.append(message['id'])
+                batch.add(self._users.messages().get(id=message['id'],
+                                                     userId='me',
+                                                     format=request_format))
+            batch.execute(http=self._http)
+        except KeyError:
+            return messages
 
-        batch.execute(http=self._http)
         return messages
 
     def get_message_raw(self, message_id):
@@ -82,3 +85,21 @@ class Gmail(object):
                                               userId='me',
                                               format='raw').execute()
         return response['raw']
+
+    def modify_message(self, message_id, removeLabelIds=[], addLabelIds=[]):
+        try:
+            body = {'addLabelIds': addLabelIds,
+                    'removeLabelIds': removeLabelIds}
+            response = self._users.messages().modify(id=message_id,
+                                                     userId='me',
+                                                     body=body).execute()
+            return response
+        except errors.HttpError as error:
+            print(error)
+
+    def trash_message(self, message_id):
+        try:
+            self._users.messages().trash(id=message_id,
+                                         userId='me').execute()
+        except errors.HttpError as error:
+            print(error)
