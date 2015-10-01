@@ -51,9 +51,6 @@ class Interface(object):
         self.main_box.idlok(1)
         self.main_box.scrollok(True)
 
-        self._change_window_color(self.menu_box, 2)
-        self._change_window_color(self.info_box, 2)
-
     def _exit_curses(self):
         curses.curs_set(1)
         curses.echo()
