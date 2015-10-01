@@ -36,12 +36,13 @@ class Interface(object):
         curses.start_color()
         curses.use_default_colors()
         curses.init_pair(1, -1, -1)
-        curses.init_pair(2, curses.COLOR_RED, -1)
-        curses.init_pair(3, curses.COLOR_GREEN, -1)
-        curses.init_pair(4, curses.COLOR_BLUE, -1)
-        curses.init_pair(5, curses.COLOR_CYAN, -1)
-        curses.init_pair(6, curses.COLOR_YELLOW, -1)
-        curses.init_pair(7, curses.COLOR_MAGENTA, -1)
+        curses.init_pair(2, -1, curses.COLOR_BLACK)
+        curses.init_pair(3, curses.COLOR_RED, -1)
+        curses.init_pair(4, curses.COLOR_GREEN, -1)
+        curses.init_pair(5, curses.COLOR_BLUE, -1)
+        curses.init_pair(6, curses.COLOR_CYAN, -1)
+        curses.init_pair(7, curses.COLOR_YELLOW, -1)
+        curses.init_pair(8, curses.COLOR_MAGENTA, -1)
 
         self.menu_box = curses.newwin(1, curses.COLS, 0, 0)
         self.main_box = curses.newwin(curses.LINES - 2, curses.COLS, 1, 0)
@@ -49,6 +50,9 @@ class Interface(object):
 
         self.main_box.idlok(1)
         self.main_box.scrollok(True)
+
+        self._change_window_color(self.menu_box, 2)
+        self._change_window_color(self.info_box, 2)
 
     def _exit_curses(self):
         curses.curs_set(1)
@@ -64,6 +68,10 @@ class Interface(object):
         else:
             key = chr(i)
         return key
+
+    def _change_window_color(self, win, color_index):
+        win.bkgd(' ', curses.A_REVERSE)
+        win.refresh()
 
     def update(self):
         getch = self._stdscr.getch()
