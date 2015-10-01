@@ -28,7 +28,6 @@ class Client(object):
     """
 
     def __init__(self, flags, debug):
-
         self.debug_mode = debug
         self.messages = []
         self.states = {
@@ -50,14 +49,14 @@ class Client(object):
         self.interface.on_key_event.append(self._on_key_event)
         self.interface.print_text('Connecting...\n')
 
-        self.gmail = self._connect(credentials)
+        self.gmail = self._authenticate(credentials)
         self.messages = self.get_messages(self.interface.
                                           main_box.getmaxyx()[0] - 1)
         self.interface.clear()
         self.print_messages(self.messages)
         self.update()
 
-    def _connect(self, credentials):
+    def _authenticate(self, credentials):
         """Retrieves credentials and authenticates.
 
         :return: The :class:`Gmail` retrieved from authentication.
@@ -75,9 +74,7 @@ class Client(object):
                 self.interface.close()
                 sys.exit()
 
-        gmail = tegmail.Gmail(http, service)
-
-        return gmail
+        return tegmail.Gmail(http, service)
 
     def _on_key_event(self, key):
         if self.currentState == self.states['home']:
@@ -153,25 +150,21 @@ class Client(object):
             for header in message['payload']['headers']:
                 message_headers[header['name']] = header['value']
 
-            self.interface.print_text(str(index + 1).rjust(4) + ' ')
+            msg = str(index + 1).rjust(4) + ' '
+            self.interface.print_text(msg)
 
             # read boolean
-            msg = ''
-            if 'UNREAD' in message['labelIds']:
-                msg = 'N'
-            msg = msg.ljust(4)
+            msg = ('N' if 'UNREAD' in message['labelIds'] else ' ').ljust(4)
             self.interface.print_text(msg)
 
             # date
             date = self._parse_date(message_headers['Date'])
-
             msg = date.strftime('%b %d ')
             self.interface.print_text(msg)
 
             # message sender
             msg = re.sub('<.*?>', '', message_headers['From'])
-            msg = msg[:16] if len(msg) > 16 else msg
-            msg = msg.ljust(20)
+            msg = (msg[:16] if len(msg) > 16 else msg).ljust(20)
             self.interface.print_text(msg)
 
             # message subject
@@ -201,13 +194,12 @@ class Client(object):
 
         email_message = email.message_from_string(data)
         for part in email_message.walk():
-            if part.get_content_type() == "multipart/alternative":
+            if (part.get_content_type() == "multipart/alternative" or
+                    'text/' not in part.get_content_type()):
                 continue
 
             text = part.get_payload(decode=True).decode('utf-8')
             text = text.replace('\r\n', '\n')
-            if 'text/' not in part.get_content_type():
-                continue
 
             if part.get_content_type() == 'text/html':
                 h = html2text.HTML2Text()
