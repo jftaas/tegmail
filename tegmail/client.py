@@ -133,8 +133,12 @@ class Client(object):
         date = date[:5]
         date = " ".join(date)
 
-        date = (datetime.datetime.
-                strptime(date, '%a, %d %b %Y %H:%M:%S'))
+        try:
+            date = (datetime.datetime.
+                    strptime(date, '%a, %d %b %Y %H:%M:%S'))
+        except ValueError:
+            date = (datetime.datetime.
+                    strptime(date, '%d %b %Y %H:%M:%S %z'))
 
         return date
 
