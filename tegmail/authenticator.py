@@ -46,10 +46,10 @@ class Authenticator(object):
         else:
             print('Found credentials:\n')
             for filename in filenames:
-                print('\t' + filename + '\n')
+                print('\t' + filename)
 
         try:
-            user = input('Enter credential name: ')
+            user = input('\nEnter credential name: ')
         except KeyboardInterrupt:
             import sys
             sys.exit()
