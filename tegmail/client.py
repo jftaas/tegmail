@@ -35,7 +35,8 @@ class Client(object):
             'message': 1
         }
 
-        self.currentState = self.states['home']
+        self.current_message_index = 0
+        self.current_state = self.states['home']
         self._flags = flags  # for client restart
 
         SCOPES = 'https://www.googleapis.com/auth/gmail.modify'
@@ -78,9 +79,9 @@ class Client(object):
         return tegmail.Gmail(http, service)
 
     def _on_key_event(self, key):
-        if self.currentState == self.states['home']:
+        if self.current_state == self.states['home']:
             self._home_keys(key)
-        elif self.currentState == self.states['message']:
+        elif self.current_state == self.states['message']:
             self._message_keys(key)
 
     # hotkeys in home state
@@ -92,8 +93,9 @@ class Client(object):
             self.interface.close()
             self.__init__(self._flags)
         elif key == 'KEY_ENTER':
-            self.currentState = self.states['message']
+            self.current_state = self.states['message']
             index = self.interface.get_cursor_pos()[0]
+            self.current_message_index = index
 
             self.interface.clear()
             message = self.read_message(self.messages[index])
@@ -122,9 +124,10 @@ class Client(object):
     # hotkeys in message state
     def _message_keys(self, key):
         if key == 'KEY_BACKSPACE':
-            self.currentState = self.states['home']
+            self.current_state = self.states['home']
             self.interface.clear()
             self.print_messages(self.messages)
+            self.interface.move_cursor(self.current_message_index, 0)
 
     # parses date formats in payload header
     # and returns a datetime object
