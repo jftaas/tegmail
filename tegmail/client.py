@@ -196,9 +196,17 @@ class Client(object):
         for header in message['payload']['headers']:
             message_headers[header['name']] = header['value']
 
-        self.interface.print_text('Date: ' + message_headers['Date'] + '\n')
-        self.interface.print_text('From: ' + message_headers['From'] + '\n')
-        self.interface.print_text('To: ' + message_headers['To'] + '\n\n\n\n')
+        try:
+            self.interface.print_text('Date: ' +
+                                      message_headers['Date'] + '\n')
+            self.interface.print_text('From: ' +
+                                      message_headers['From'] + '\n')
+            self.interface.print_text('To: ' +
+                                      message_headers['To'])
+        except KeyError:
+            pass
+
+        self.interface.print_text('\n\n\n\n')
 
         data = self.gmail.get_message_raw(message['id'])
         data = base64.urlsafe_b64decode(data).decode('utf-8')
