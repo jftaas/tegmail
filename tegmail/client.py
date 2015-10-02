@@ -88,7 +88,7 @@ class Client(object):
         if not self.gmail.connected:
             return
 
-        if key == 'KEY_ESCAPE':
+        if key == 'KEY_ESCAPE' or key == 'q':
             self.interface.close()
             self.__init__(self._flags)
         elif key == 'KEY_ENTER':
